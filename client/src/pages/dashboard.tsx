@@ -186,7 +186,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-widest text-white leading-none">
-              VC<span className="text-primary">RESERVE</span>
+              NIC<span className="text-primary">VIDCON</span>
             </h1>
             <p className="text-xs text-muted-foreground font-mono tracking-widest">
               COMMAND & CONTROL CENTER
@@ -389,7 +389,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex justify-between border-b border-border/50 pb-2">
                         <span>VC Assigned:</span>
-                        <span className="text-white text-right max-w-[350px] truncate">
+                        <span className="text-white text-right max-w-[360px] truncate">
                           {rotatingUpcomingVc.vcAssigned} ({rotatingUpcomingVc.location} : {rotatingUpcomingVc.ipPhone})
                         </span>
                       </div>
