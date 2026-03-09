@@ -106,11 +106,11 @@ export default function Dashboard() {
     const container = tableScrollRef.current;
     if (!container) return;
 
-    // ✅ Scroll only if content overflows
+    // Scroll only if content overflows
     if (container.scrollHeight <= container.clientHeight) return;
 
     let direction: "down" | "up" = "down";
-    const scrollSpeed = 1.25; // ✅ NIC recommended smooth speed
+    const scrollSpeed = 1.00; // NIC recommended smooth speed
     let animationFrame: number;
 
     const autoScroll = () => {
@@ -245,7 +245,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* 🔥 CONTENT AREA */}
+            {/* CONTENT AREA */}
             <div className="relative w-full h-full">
               <AnimatePresence mode="wait">
                 {primaryLiveVc ? (
@@ -446,7 +446,7 @@ export default function Dashboard() {
                   {todayVcs.length > 0 ? (
                     todayVcs.map((vc) => (
                       <tr
-                        key={vc.vcid}   // 🔥 use id instead of vcid
+                        key={vc.vcid}   // use id instead of vcid
                         className={`hover:bg-background/50 transition-colors ${vc.status === "live" ? "bg-primary/5" : ""
                           }`}
                       >
