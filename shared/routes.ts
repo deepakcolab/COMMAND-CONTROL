@@ -1,7 +1,7 @@
 import { z } from "zod";
 // import { vcs } from "./schema";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardStats } from "./schema";
+import { DashboardStats, Vc } from "./schema";
 
 // import type { Vc, DashboardStats } from "@shared/routes";
 
@@ -49,6 +49,8 @@ import { DashboardStats } from "./schema";
 //     refetchInterval: 30000,
 //   });
 // }
+
+
 export const errorSchemas = {
   internal: z.object({ message: z.string() }),
 };
@@ -59,7 +61,7 @@ export const api = {
       method: "GET" as const,
       path: "/api/vcs" as const,
       responses: {
-        200: z.array(z.any()), // demo mode
+        200: z.array(z.any()),
       },
     },
   },
@@ -102,7 +104,8 @@ export function buildUrl(
    🔥 STATIC DEMO DATA — ADD HERE
 ===================================================== */
 
-export const staticVcs = (() => {
+// export const staticVcs = (() => {
+export const staticVcs: Vc[] = (() => {
   const now = new Date();
 
   return [
