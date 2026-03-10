@@ -12,7 +12,7 @@ export const vcs = pgTable("vcs", {
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   participantsCount: integer("participants_count").notNull(),
-  status: varchar("status", { enum: ["upcoming", "live", "completed"] }).notNull(), 
+  status: varchar("status", { enum: ["upcoming", "Live", "completed"] }).notNull(), 
   coordinatorName: text("coordinator_name"),
   ipPhone: text("ip_phone"),  
   location: text("location").notNull(),

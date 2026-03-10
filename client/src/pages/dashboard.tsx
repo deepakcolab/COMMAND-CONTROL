@@ -20,31 +20,20 @@ import {
   Video
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-
 export default function Dashboard() {
   const { data: vcs, isLoading: isLoadingVcs, isError: isErrorVcs } = useVcs();
+
   const { data: stats, isLoading: isLoadingStats } = useStats();
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
 
-  // ================= REALTIME STATUS ENGINE =================
-  const getRealtimeStatus = (vc: Vc) => {
-    const now = new Date();
-    const start = new Date(vc.startTime);
-    const end = new Date(vc.endTime);
-
-    if (now >= start && now <= end) return "live";
-    if (now < start) return "upcoming";
-    return "completed";
-  };
-
   const liveVcs: Vc[] = useMemo(
-    () => (vcs?.filter(vc => getRealtimeStatus(vc) === "live") ?? []) as Vc[],
+    () => (vcs?.filter(vc => vc.status === "Live") ?? []) as Vc[],
     [vcs]
   );
 
   const upcomingVcs: Vc[] = useMemo(() => {
     const list =
-      vcs?.filter(vc => getRealtimeStatus(vc) === "upcoming") ?? [];
+      vcs?.filter(vc => vc.status === "upcoming") ?? [];
 
     return list.sort(
       (a, b) =>
@@ -52,7 +41,6 @@ export default function Dashboard() {
         new Date(b.startTime).getTime()
     );
   }, [vcs]);
-
   const todayVcs = useMemo(() => {
     if (!vcs) return [];
 
@@ -63,8 +51,8 @@ export default function Dashboard() {
     };
 
     return [...vcs].sort((a, b) => {
-      const statusA = getRealtimeStatus(a);
-      const statusB = getRealtimeStatus(b);
+      const statusA = a.status;
+      const statusB = b.status;
 
       const priorityDiff =
         statusPriority[statusA] - statusPriority[statusB];
@@ -164,13 +152,31 @@ export default function Dashboard() {
   }
 
   // Fallback stats if API returns empty
-  const safeStats = stats || {
+  const safeStats = {
     totalVcsToday: vcs?.length || 0,
-    totalOngoing: liveVcs.length,
-    totalUpcoming: upcomingVcs.length,
+
+    totalOngoing: vcs?.filter(v => v.status === "Live").length || 0,
+
+    totalUpcoming: vcs?.filter(v => v.status === "upcoming").length || 0,
+
     completedVcs: vcs?.filter(v => v.status === "completed").length || 0,
-    averageDurationMins: 45,
-    totalParticipantsToday: vcs?.reduce((acc, v) => acc + v.participantsCount, 0) || 0
+
+    averageDurationMins:
+      vcs && vcs.length > 0
+        ? Math.round(
+          vcs.reduce((total, vc) => {
+            const start = new Date(vc.startTime).getTime();
+            const end = new Date(vc.endTime).getTime();
+
+            const durationMinutes = (end - start) / (1000 * 60);
+
+            return total + durationMinutes;
+          }, 0) / vcs.length
+        )
+        : 0,
+
+    totalParticipantsToday:
+      vcs?.reduce((acc, v) => acc + (v.participantsCount || 0), 0) || 0
   };
 
   return (
@@ -447,7 +453,7 @@ export default function Dashboard() {
                     todayVcs.map((vc) => (
                       <tr
                         key={vc.vcid}   // use id instead of vcid
-                        className={`hover:bg-background/50 transition-colors ${vc.status === "live" ? "bg-primary/5" : ""
+                        className={`hover:bg-background/50 transition-colors ${vc.status === "Live" ? "bg-primary/5" : ""
                           }`}
                       >
                         <td className="px-4 py-3 truncate max-w-[150px]">
@@ -475,15 +481,17 @@ export default function Dashboard() {
                         </td>
 
                         <td className="px-4 py-3">
-                          {vc.status === "live" && (
+                          {vc.status === "Live" && (
                             <span className="text-primary flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                               LIVE
                             </span>
                           )}
+
                           {vc.status === "upcoming" && (
                             <span className="text-accent">UPCOMING</span>
                           )}
+
                           {vc.status === "completed" && (
                             <span className="text-muted-foreground">COMPLETED</span>
                           )}

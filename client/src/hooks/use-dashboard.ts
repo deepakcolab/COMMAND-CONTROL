@@ -1,35 +1,4 @@
-// import { useQuery } from "@tanstack/react-query";
-// import { api } from "@shared/routes";
-// import { Vc, DashboardStats } from "@shared/schema";
-
-// // Helper to parse responses and handle zod validation if needed, 
-// // but we'll trust the generic fetch for simplicity in this generated code
-// async function fetchApi<T>(path: string): Promise<T> {
-//   const res = await fetch(path);
-//   if (!res.ok) {
-//     throw new Error(`Failed to fetch ${path}`);
-//   }
-//   return res.json();
-// }
-
-// export function useVcs() {
-//   return useQuery<Vc[]>({
-//     queryKey: [api.vcs.list.path],
-//     queryFn: () => fetchApi(api.vcs.list.path),
-//     refetchInterval: 30000, // 30 seconds auto-refresh
-//   });
-// }
-
-// export function useStats() {
-//   return useQuery<DashboardStats>({
-//     queryKey: [api.stats.get.path],
-//     queryFn: () => fetchApi(api.stats.get.path),
-//     refetchInterval: 30000, // 30 seconds auto-refresh
-//   });
-// }
-
-
-import { staticStats, staticVcs } from "@shared/routes";
+import { useEffect, useState } from "react";
 import { DashboardStats, Vc } from "@shared/schema";
 
 export function useVcs(): {
@@ -37,10 +6,60 @@ export function useVcs(): {
   isLoading: boolean;
   isError: boolean;
 } {
+  const [data, setData] = useState<Vc[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    const fetchVcs = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/vcs");
+        const apiData = await res.json();
+
+        const formatted: Vc[] = apiData.map((item: any) => ({
+          vcid: item.vcid,
+
+          title: item.purpose,
+
+          chairedBy: item.chairedBy,
+
+          hostStudio: item.stateName,
+
+          vcAssigned: item.vcAssignedTo,
+
+          destStudios: [item.studioCount],
+
+          startTime: new Date(`${item.vcDate} ${item.vcStartTime}`),
+
+          endTime: new Date(`${item.vcDate} ${item.vcEndTime}`),
+
+          participantsCount: 0,
+
+          status: (item.currentVCStatus || "").toLowerCase() as "live" | "upcoming" | "completed",
+
+          coordinatorName: "",
+
+          ipPhone: item.ipPhone,
+
+          location: item.cmsLocation,
+        }));
+
+        setData(formatted);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("API Error:", error);
+        setIsError(true);
+        setIsLoading(false);
+      }
+    };
+
+    fetchVcs();
+  }, []);
+
   return {
-    data: staticVcs,
-    isLoading: false,
-    isError: false,
+    data,
+    isLoading,
+    isError,
   };
 }
 
@@ -48,8 +67,38 @@ export function useStats(): {
   data: DashboardStats;
   isLoading: boolean;
 } {
+  const { data: vcs, isLoading } = useVcs();
+
+  const stats: DashboardStats = {
+    totalVcsToday: vcs.length,
+
+    totalOngoingVcs: vcs.filter((v) => v.status === "Live").length,
+
+    totalUpcomingVcs: vcs.filter((v) => v.status === "upcoming").length,
+
+    completedVcs: vcs.filter((v) => v.status === "completed").length,
+
+    averageDurationMins:
+      vcs.length > 0
+        ? Math.round(
+          vcs.reduce((sum, vc) => {
+            const duration =
+              (new Date(vc.endTime).getTime() -
+                new Date(vc.startTime).getTime()) /
+              60000;
+            return sum + duration;
+          }, 0) / vcs.length
+        )
+        : 0,
+
+    totalParticipantsToday: vcs.reduce(
+      (sum, vc) => sum + (vc.participantsCount || 0),
+      0
+    ),
+  };
+
   return {
-    data: staticStats,
-    isLoading: false,
+    data: stats,
+    isLoading,
   };
 }
