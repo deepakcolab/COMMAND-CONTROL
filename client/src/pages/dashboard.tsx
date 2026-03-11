@@ -23,7 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 export default function Dashboard() {
   const { data: vcs, isLoading: isLoadingVcs, isError: isErrorVcs } = useVcs();
 
-  const { data: stats, isLoading: isLoadingStats } = useStats();
+  const { data: stats, isLoading: isLoadingStats } = useStats(vcs);
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
 
   const liveVcs: Vc[] = useMemo(

@@ -79,7 +79,7 @@ const CHART_COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444'];
 
 export function StatusPieChart({ vcs }: { vcs: Vc[] }) {
   const data = [
-    { name: 'Live', value: vcs.filter(v => v.status === 'live').length },
+    { name: 'Live', value: vcs.filter(v => v.status === 'Live').length },
     { name: 'Upcoming', value: vcs.filter(v => v.status === 'upcoming').length },
     { name: 'Completed', value: vcs.filter(v => v.status === 'completed').length },
   ].filter(d => d.value > 0);
